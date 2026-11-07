@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* 3D Soft Aesthetic Palette */
+  --color-primary: #8b5cf6; /* Vibrant Violet */
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: #ede9fe; /* Violet 100 */
+
+  --color-secondary: #6366f1; /* Indigo */
+  --color-accent: #f5f3ff; /* Soft Lavender background */
+
+  --color-background: #fafafa; /* Warm off-white */
+  --color-foreground: #1e1b4b; /* Deep indigo-slate */
+
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+}
+
+html,
+body {
+  @apply bg-background text-foreground antialiased;
+}
+
+/* Custom soft shadow for 3D depth */
+.shadow-soft-3d {
+  box-shadow: 0 20px 50px -12px rgba(139, 92, 246, 0.15),
+              0 10px 20px -5px rgba(0, 0, 0, 0.05);
+}
+
+.button-3d {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 0 0 #6d28d9; /* Darker violet bottom edge */
+}
+
+.button-3d:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 #6d28d9;
+}

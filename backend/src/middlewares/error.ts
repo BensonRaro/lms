@@ -42,6 +42,16 @@ export const errorHandler = (
     });
   }
 
+  // Body parsers report oversized payloads without the app's error shape.
+  if ((err as { type?: string }).type === "entity.too.large") {
+    return res.status(413).json({
+      error: {
+        code: "PAYLOAD_TOO_LARGE",
+        message: "That request is too large.",
+      },
+    });
+  }
+
   // Log unexpected errors
   console.error('Unhandled Error:', err);
 

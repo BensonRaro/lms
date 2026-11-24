@@ -1,10 +1,44 @@
 Let start by steping the backend, checkout the claude.md to see the backend Architecture. Then setup dotenv, express, cors, helmet, cookie parser, body parser, morgan, global errors and start server.
+
 Project should be running on backend/src/server.ts, also set up nodemon.
+
 fix errors on backend/middlewares/error.ts, env.ts
+
 setup database(mongodb + mongoose) URI Already added
+
 Let connect better-auth, use mongo db and adapter to connect the db
+
 Now let connect better-auth to the frontend, on the frontend group login and signup pages on auth folder (read claude.md) use react-router layout to group this pages - use https://better-auth.com/docs/installation#create-client-instance. The pages should be well designed, beautifully design, staining which should also include Google login. Better-auth - for client already configured.  
+
 this the disgn I would like on both signup or login:  https://cdn.dribbble.com/userupload/48306928/file/08c6f0d1cc86ca2f2526fc923da6f9eb.png?resize=1024x819&vertical=center
 use public/auth-image.png on the left, also I would to use the theme on these image as well as inputs, buttons design
+
 Add a sonner toast to notify the user if there action was a success or failer.
 On the auth layout, let make sure if user is signed in, they redicted to the home page.
+
+Now let build header- use better-auth to get current logged in user and the hero section image reference: https://cdn.dribbble.com/userupload/45699541/file/5496ca9efb46e1cd68c1f1f0981bdeb7.png?resize=752x564&vertical=center
+
+I'm thinking, the hero section is designed like a card, how about making header look like a card.
+
+Redesign the scrollbar to fit our project design. Also hero and header section have the same width.
+
+To become an instructor, on the user dropdown, user can click become an instructor which directs them to an onboarding process then the dashboard, here they can upload their first course which will be review by the admin after pushing.
+
+To make it a more production ready app, intergrate Tanstack query + axios in the frontend. Then update the frontend to use them but better auth should continue using authclient.
+
+On the dashboards, we will be using a sidebar on the left instead of a header. Sidebar should contain all instructor links.
+Can you undock the sidebar to be displayed like a card.
+
+Create course page- we can use it to update instead of creating anothr page, what should should include: thumbnail(upload coming soon), be able to create multiple lessons, video upload for each lesson(upload coming soon).
+
+Let connect https://cloudinary.com/ - CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET already added on backend env
+
+Include course delete, Changed secret, now you can design the upload section for both thumbnail and video uploads.
+
+Fix design issue, the video upload progess bar is taking too much width during video upload.
+
+Fix, on media delete or replace, the media should be deleted on cloudinary.
+
+instructor should always add first lesson as free - course preview, also the instructor should be able to choose if the course is free or a paid course.
+
+Dashboard should be guarded on the layout. If you are unauthenticated or role mismatch - student visiting instructor dashboard. 

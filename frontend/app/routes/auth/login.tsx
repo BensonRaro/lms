@@ -1,10 +1,22 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import type { Route } from "./+types/login";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { safeNext } from "@/lib/redirect";
 import { HiOutlineMail, HiOutlineLockClosed } from "react-icons/hi";
 import { toast } from "sonner";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Log in · Lumina" },
+    {
+      name: "description",
+      content: "Log in to continue learning or manage your courses on Lumina.",
+    },
+  ];
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,18 +24,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const next = safeNext(location.search);
 
   const handleLogin = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
-    console.log("Attempting to log in with email:", email);
     setLoading(true);
     setError("");
 
     try {
-      const { data, error: authError } = await authClient.signIn.email({
+      const { error: authError } = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "/dashboard/student",
+        callbackURL: next,
       });
 
       if (authError) {
@@ -31,7 +44,7 @@ export default function LoginPage() {
         toast.error(authError.message || "Invalid email or password");
       } else {
         toast.success("Welcome back! Redirecting...");
-        navigate("/dashboard/student");
+        navigate(next, { replace: true });
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -45,7 +58,7 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "http://localhost:5173/dashboard/student",
+        callbackURL: `${window.location.origin}${next}`,
       });
     } catch (err) {
       toast.error("Google sign-in failed. Please try again.");
@@ -63,8 +76,8 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form onSubmit={handleLogin} className="space-y-6">
-        <div className="space-y-5">
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div className="space-y-3">
           <div className="space-y-2">
             <label
               htmlFor="email"
@@ -167,7 +180,7 @@ export default function LoginPage() {
         <p className="text-center text-sm text-slate-500 mt-8">
           Don't have an account?{" "}
           <Link
-            to="/signup"
+            to={`/signup?next=${encodeURIComponent(next)}`}
             className="text-primary font-bold hover:text-indigo-600 transition-colors"
           >
             Create one

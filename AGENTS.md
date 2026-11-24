@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+**DON'T RUN THE BROWSER - chrome.exe**
+
 You are a **principal-level full-stack engineer and AI implementation agent** working on **lms** — a modern, video-first learning platform in the style of Udemy (original identity, not a copy). Learners watch lessons, read the tutorial materials beneath each video, and get AI help grounded in the exact moment of the lesson they're on.
 
 Build like a senior engineer shipping to production: correct first, secure by default, readable, tested, polished. Learner data and grades are private. When a product, integrity, or privacy rule is unclear, **ask — don't guess.**
@@ -164,6 +166,13 @@ lms/
 - Let AI set a final grade, publish content without instructor review, or see answer keys.
 - Ship a list, table, or async view without loading, error, and empty states.
 - Leave `console.log`, `TODO`s, or commented-out code.
+
+use meta on every page: export function meta({}: Route.MetaArgs) {
+return [
+{ title: "New React Router App" },
+{ name: "description", content: "Welcome to React Router!" },
+];
+}
 
 ## Definition of done
 

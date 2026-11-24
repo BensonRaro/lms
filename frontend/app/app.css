@@ -3,6 +3,8 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Editorial italic accent used for single words in marketing headlines */
+  --font-display: "Instrument Serif", ui-serif, Georgia, Cambria, serif;
 
   /* 3D Soft Aesthetic Palette */
   --color-primary: #8b5cf6; /* Vibrant Violet */
@@ -39,3 +41,93 @@ body {
   transform: translateY(2px);
   box-shadow: 0 2px 0 0 #6d28d9;
 }
+
+/* Landing hero headline: grows with viewport height so the hero card fits
+   inside one screen on short laptops as well as tall monitors. */
+.hero-title {
+  line-height: 1.02;
+}
+
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: clamp(2.9rem, 6.2vh, 4.2rem);
+  }
+}
+
+/* Faint blueprint grid for landing page backdrops */
+.bg-grid-soft {
+  background-image: linear-gradient(
+      to right,
+      rgba(139, 92, 246, 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(139, 92, 246, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Dotted texture used behind hero imagery */
+.bg-dots-soft {
+  background-image: radial-gradient(
+    rgba(139, 92, 246, 0.35) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 18px 18px;
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float-soft {
+  animation: float-soft 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-soft {
+    animation: none;
+  }
+}
+
+/* Scrollbars: a slim violet thumb that reads as part of the soft-3D system
+   instead of the browser default. Chromium gets the rounded 4px thumb below;
+   engines without the WebKit pseudo-elements (Firefox) fall back to the
+   standard thin scrollbar. Setting `scrollbar-color` in Chromium would disable
+   the WebKit styling, so it stays behind the feature query. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.45) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-color: rgba(139, 92, 246, 0.4);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 92, 246, 0.7);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #8b5cf6;
+}
+

@@ -1,14 +1,26 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import type { Route } from "./+types/signup";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { safeNext } from "@/lib/redirect";
 import {
   HiOutlineUser,
   HiOutlineMail,
   HiOutlineLockClosed,
 } from "react-icons/hi";
 import { toast } from "sonner";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Create account · Lumina" },
+    {
+      name: "description",
+      content: "Create a free Lumina account and start learning today.",
+    },
+  ];
+}
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -17,6 +29,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const next = safeNext(location.search);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +38,11 @@ export default function SignupPage() {
     setError("");
 
     try {
-      const { data, error: authError } = await authClient.signUp.email({
+      const { error: authError } = await authClient.signUp.email({
         email,
         password,
         name,
-        callbackURL: "/dashboard/student",
+        callbackURL: next,
       });
 
       if (authError) {
@@ -36,7 +50,7 @@ export default function SignupPage() {
         toast.error(authError.message || "Registration failed");
       } else {
         toast.success("Account created successfully! Redirecting...");
-        navigate("/dashboard/student");
+        navigate(next, { replace: true });
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -57,8 +71,8 @@ export default function SignupPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSignup} className="space-y-6">
-        <div className="space-y-5">
+      <form onSubmit={handleSignup} className="space-y-4">
+        <div className="space-y-3">
           <div className="space-y-2">
             <label
               htmlFor="name"
@@ -123,7 +137,7 @@ export default function SignupPage() {
         <Button
           type="submit"
           size="lg"
-          className="w-full py-8 text-lg shadow-lg shadow-primary/20"
+          className="w-full py-4 text-lg shadow-lg shadow-primary/20"
           disabled={loading}
         >
           {loading ? "Creating account..." : "Create account"}
@@ -144,11 +158,11 @@ export default function SignupPage() {
           type="button"
           variant="outline"
           size="lg"
-          className="w-full py-8 text-lg border-slate-100 hover:bg-slate-50 shadow-sm"
+          className="w-full py-4 text-lg border-slate-100 hover:bg-slate-50 shadow-sm"
           onClick={() => {
             authClient.signIn.social({
               provider: "google",
-              callbackURL: "http://localhost:5173/dashboard/student",
+              callbackURL: `${window.location.origin}${next}`,
             });
           }}
         >
@@ -175,12 +189,12 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-slate-500 mt-8">
           Already have an account?{" "}
-          <a
-            href="/login"
+          <Link
+            to={`/login?next=${encodeURIComponent(next)}`}
             className="text-primary font-bold hover:text-indigo-600 transition-colors"
           >
             Log in
-          </a>
+          </Link>
         </p>
       </form>
     </div>

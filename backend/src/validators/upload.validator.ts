@@ -12,3 +12,16 @@ export const uploadSignSchema = z
   .strict();
 
 export type UploadSignInput = z.infer<typeof uploadSignSchema>;
+
+/**
+ * Ids the editor uploaded but no longer uses. The server still checks
+ * ownership and course references, so a client cannot delete live media.
+ */
+export const uploadDiscardSchema = z
+  .object({
+    publicIds: z
+      .array(z.string().trim().min(1).max(255))
+      .min(1)
+      .max(20),
+  })
+  .strict();

@@ -5,7 +5,8 @@ import { AppError } from "../middlewares/error.js";
 import { Course } from "../models/course.model.js";
 import type { CourseDraftInput } from "../validators/course.validator.js";
 import { assertReadyForReview, isEditable, toCourseObjectId, toFields, EDITABLE } from "./course-fields.js";
-import { discardPlannedMedia, planMedia } from "./course-media.service.js";
+import { planMedia } from "./course-media.service.js";
+import { discardPlannedMedia } from "./media-cleanup.service.js";
 
 /**
  * Saves the latest edits and sends the course to admin review in one
@@ -99,7 +100,7 @@ export async function submitForReview(params: {
       throw new AppError(500, "COURSE_WRITE_FAILED", "Could not submit your course.");
     }
 
-    discardPlannedMedia(media);
+    await discardPlannedMedia(media);
     return toCourseDTO(result);
   } finally {
     await session.endSession();

@@ -1,5 +1,4 @@
 import {
-  destroyCloudinaryAssets,
   getCloudinaryAsset,
   type CloudinaryDeliveryType,
   type CloudinaryResourceType,
@@ -7,10 +6,10 @@ import {
 import { mediaPrefix, type MediaKind } from "../lib/cloudinary/media-path.js";
 import type { LeanCourse, MediaAsset } from "../lib/course-dto.js";
 import { AppError } from "../middlewares/error.js";
-import { Course } from "../models/course.model.js";
 import type { CourseDraftInput } from "../validators/course.validator.js";
 
-const RULES: Record<
+/** Cloudinary target for each media kind, shared with the cleanup service. */
+export const MEDIA_RULES: Record<
   MediaKind,
   { resourceType: CloudinaryResourceType; deliveryType: CloudinaryDeliveryType }
 > = {
@@ -48,7 +47,7 @@ async function verifyMedia(
     );
   }
 
-  const lookup = await getCloudinaryAsset({ ...RULES[kind], publicId });
+  const lookup = await getCloudinaryAsset({ ...MEDIA_RULES[kind], publicId });
 
   if (lookup.status === "missing") {
     throw new AppError(
@@ -116,6 +115,23 @@ export async function planMedia(params: {
   }
 
   const removedVideos: string[] = [];
+
+  // A deleted lesson or section never reaches the comparison below, so its
+  // video has to be queued here or it would stay in Cloudinary forever.
+  const keptLessonIds = new Set<string>();
+  for (const section of input.sections) {
+    for (const lesson of section.lessons) {
+      if (lesson.id) {
+        keptLessonIds.add(lesson.id);
+      }
+    }
+  }
+  for (const [lessonId, video] of previousVideos) {
+    if (!keptLessonIds.has(lessonId)) {
+      removedVideos.push(video.publicId);
+    }
+  }
+
   const videos = await Promise.all(
     input.sections.map((section) =>
       Promise.all(
@@ -139,59 +155,4 @@ export async function planMedia(params: {
   );
 
   return { thumbnail, videos, removedThumbnail, removedVideos };
-}
-
-/**
- * Deletes only assets no course still points at. Two courses can legitimately
- * share an id (an instructor copying a public id), so a blind destroy could
- * break the other course's cover.
- */
-async function destroyIfUnreferenced(kind: MediaKind, publicIds: (string | null)[]) {
-  const ids = publicIds.filter((id): id is string => Boolean(id));
-
-  if (ids.length === 0) {
-    return;
-  }
-
-  const path =
-    kind === "thumbnail"
-      ? "thumbnail.publicId"
-      : "sections.lessons.video.publicId";
-
-  let unused: string[];
-
-  try {
-    const checks = await Promise.all(
-      ids.map(async (publicId) =>
-        (await Course.exists({ [path]: publicId })) ? null : publicId,
-      ),
-    );
-    unused = checks.filter((id): id is string => Boolean(id));
-  } catch {
-    // A lookup failure leaves the asset in place; an orphan is harmless.
-    return;
-  }
-
-  void destroyCloudinaryAssets({ ...RULES[kind], publicIds: unused });
-}
-
-/**
- * Deletes replaced or removed uploads. Best-effort by design: an orphan in
- * Cloudinary is harmless, while failing the user's save would not be.
- */
-export function discardPlannedMedia(plan: MediaPlan) {
-  void destroyIfUnreferenced("thumbnail", [plan.removedThumbnail]);
-  void destroyIfUnreferenced("video", plan.removedVideos);
-}
-
-/** Deletes everything a removed course owned, unless another course uses it. */
-export function discardCourseMedia(course: LeanCourse) {
-  const videos = course.sections.flatMap((section) =>
-    section.lessons.flatMap((lesson) =>
-      lesson.video ? [lesson.video.publicId] : [],
-    ),
-  );
-
-  void destroyIfUnreferenced("thumbnail", [course.thumbnail?.publicId ?? null]);
-  void destroyIfUnreferenced("video", videos);
 }

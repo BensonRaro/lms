@@ -9,6 +9,31 @@ export const COURSE_LEVELS = [
 
 export type CourseLevel = (typeof COURSE_LEVELS)[number];
 export type CourseStatus = "draft" | "in_review" | "published" | "rejected";
+export type CoursePricing = "free" | "paid";
+
+/** Prices are USD cents; mirrors the backend validator. */
+export const MIN_COURSE_PRICE_CENTS = 100;
+export const MAX_COURSE_PRICE_CENTS = 1_000_000;
+
+const USD = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+/** "$12.00" — all course prices are stored in USD cents. */
+export function formatUsd(cents: number) {
+  return USD.format(cents / 100);
+}
+
+/** "Free" or the formatted price, for list rows and summaries. */
+export function coursePriceLabel(
+  pricing: CoursePricing,
+  priceCents: number | null,
+) {
+  return pricing === "paid" && priceCents !== null
+    ? formatUsd(priceCents)
+    : "Free";
+}
 
 export type CourseLesson = {
   id: string;
@@ -17,6 +42,8 @@ export type CourseLesson = {
   content: string;
   /** Cloudinary id of the lesson video, or null for a written-only lesson. */
   videoPublicId: string | null;
+  /** The first lesson of the first section is always the free preview. */
+  isPreview: boolean;
 };
 
 export type CourseSection = {
@@ -35,6 +62,8 @@ export type Course = {
   level: CourseLevel;
   thumbnailUrl: string | null;
   thumbnailPublicId: string | null;
+  pricing: CoursePricing;
+  priceCents: number | null;
   status: CourseStatus;
   submittedAt: string | null;
   sections: CourseSection[];
@@ -50,6 +79,8 @@ export type CourseSummary = {
   level: CourseLevel;
   thumbnailUrl: string | null;
   lessonCount: number;
+  pricing: CoursePricing;
+  priceCents: number | null;
   updatedAt: string;
 };
 
@@ -61,6 +92,8 @@ export type CourseDraftPayload = {
   category: ExpertiseTopic;
   level: CourseLevel;
   thumbnailPublicId: string | null;
+  pricing: CoursePricing;
+  priceCents: number | null;
   sections: {
     id?: string;
     title: string;

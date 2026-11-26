@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { signUpload } from "../controllers/upload.controller.js";
+import {
+  discardUploads,
+  signUpload,
+} from "../controllers/upload.controller.js";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
@@ -8,5 +11,6 @@ const router = Router();
 router.use(requireAuth, requireRole("instructor", "admin", "superadmin"));
 
 router.post("/sign", signUpload);
+router.post("/discard", discardUploads);
 
 export default router;

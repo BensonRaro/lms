@@ -25,6 +25,8 @@ const lessonSchema = new Schema(
     /** Written tutorial shown beneath the video. */
     content: { type: String, trim: true, maxlength: 20000, default: "" },
     video: { type: mediaAssetSchema, default: null },
+    /** The first lesson of the first section is always the free preview. */
+    isPreview: { type: Boolean, default: false },
   },
   { _id: true },
 );
@@ -51,6 +53,15 @@ const courseSchema = new Schema(
       required: true,
     },
     thumbnail: { type: mediaAssetSchema, default: null },
+    /** Free courses ignore `priceCents`; paid ones require it before review. */
+    pricing: {
+      type: String,
+      enum: ["free", "paid"],
+      default: "free",
+      required: true,
+    },
+    /** USD cents, set by the service from validated input. Null when free. */
+    priceCents: { type: Number, default: null, min: 0 },
     status: {
       type: String,
       enum: ["draft", "in_review", "published", "rejected"],

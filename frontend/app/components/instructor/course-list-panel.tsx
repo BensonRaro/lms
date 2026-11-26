@@ -6,6 +6,7 @@ import {
   HiOutlineRefresh,
 } from "react-icons/hi";
 import type { CourseSummary } from "@/lib/api/courses";
+import { coursePriceLabel } from "@/lib/api/courses";
 import { apiErrorMessage } from "@/lib/api/client";
 import { CourseStatusBadge } from "@/components/instructor/course-status-badge";
 
@@ -119,6 +120,9 @@ export function CourseListPanel({
                       {course.lessonCount === 1 ? "lesson" : "lessons"} ·
                       Updated {DATE_FORMAT.format(new Date(course.updatedAt))}
                     </span>
+                  </span>
+                  <span className="hidden shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-600 sm:inline-flex">
+                    {coursePriceLabel(course.pricing, course.priceCents)}
                   </span>
                   <CourseStatusBadge status={course.status} />
                   <HiOutlineChevronRight className="size-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5" />

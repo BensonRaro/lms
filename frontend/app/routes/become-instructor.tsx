@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { HiOutlineBadgeCheck, HiOutlineClock, HiOutlineSparkles } from "react-icons/hi";
 import type { Route } from "./+types/become-instructor";
 import { SiteHeader } from "@/components/globals/site-header";
+import { PageLoader } from "@/components/globals/page-loader";
 import { OnboardingWizard } from "@/components/instructor/onboarding-wizard";
 import { canTeach, useSessionUser } from "@/lib/session";
 
@@ -110,18 +111,6 @@ export default function BecomeInstructorPage() {
           <OnboardingWizard onComplete={handleComplete} />
         </div>
       </main>
-    </div>
-  );
-}
-
-function PageLoader() {
-  return (
-    <div className="grid min-h-screen place-items-center bg-background">
-      <span
-        role="status"
-        aria-label="Loading"
-        className="size-10 animate-spin rounded-full border-4 border-primary-soft border-t-primary"
-      />
     </div>
   );
 }

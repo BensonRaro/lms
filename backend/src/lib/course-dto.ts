@@ -3,6 +3,7 @@ import { cloudinaryThumbnailUrl } from "./cloudinary/index.js";
 
 export type CourseStatus = "draft" | "in_review" | "published" | "rejected";
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
+export type CoursePricing = "free" | "paid";
 
 /** Stored Cloudinary reference; the delivery URL is built from it. */
 export type MediaAsset = { publicId: string; version: number };
@@ -14,6 +15,7 @@ export type LeanLesson = {
   summary: string;
   content: string;
   video: MediaAsset | null;
+  isPreview: boolean;
 };
 
 export type LeanSection = {
@@ -31,6 +33,8 @@ export type LeanCourse = {
   category: string;
   level: CourseLevel;
   thumbnail: MediaAsset | null;
+  pricing: CoursePricing;
+  priceCents: number | null;
   status: CourseStatus;
   submittedAt: Date | null;
   sections: LeanSection[];
@@ -44,6 +48,7 @@ export type LessonDTO = {
   summary: string;
   content: string;
   videoPublicId: string | null;
+  isPreview: boolean;
 };
 
 export type SectionDTO = {
@@ -61,6 +66,8 @@ export type CourseDTO = {
   level: CourseLevel;
   thumbnailUrl: string | null;
   thumbnailPublicId: string | null;
+  pricing: CoursePricing;
+  priceCents: number | null;
   status: CourseStatus;
   submittedAt: string | null;
   sections: SectionDTO[];
@@ -77,6 +84,8 @@ export type CourseSummaryDTO = {
   level: CourseLevel;
   thumbnailUrl: string | null;
   lessonCount: number;
+  pricing: CoursePricing;
+  priceCents: number | null;
   updatedAt: string;
 };
 
@@ -99,6 +108,8 @@ export function toCourseDTO(doc: LeanCourse): CourseDTO {
     level: doc.level,
     thumbnailUrl: thumbnailUrl(doc.thumbnail),
     thumbnailPublicId: doc.thumbnail?.publicId ?? null,
+    pricing: doc.pricing ?? "free",
+    priceCents: doc.priceCents ?? null,
     status: doc.status,
     submittedAt: doc.submittedAt ? doc.submittedAt.toISOString() : null,
     sections: doc.sections.map((section) => ({
@@ -110,6 +121,7 @@ export function toCourseDTO(doc: LeanCourse): CourseDTO {
         summary: lesson.summary,
         content: lesson.content,
         videoPublicId: lesson.video?.publicId ?? null,
+        isPreview: lesson.isPreview ?? false,
       })),
     })),
     lessonCount: countLessons(doc.sections),
@@ -126,6 +138,8 @@ export function toCourseSummaryDTO(doc: LeanCourse): CourseSummaryDTO {
     level: doc.level,
     thumbnailUrl: thumbnailUrl(doc.thumbnail),
     lessonCount: countLessons(doc.sections),
+    pricing: doc.pricing ?? "free",
+    priceCents: doc.priceCents ?? null,
     updatedAt: doc.updatedAt.toISOString(),
   };
 }

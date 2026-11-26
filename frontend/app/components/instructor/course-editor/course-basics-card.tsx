@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { COURSE_LEVELS } from "@/lib/api/courses";
 import { EXPERTISE_TOPICS, type ExpertiseTopic } from "@/lib/api/instructors";
 import { EditorField } from "./editor-field";
+import { PricingField } from "./pricing-field";
 import { ThumbnailUpload } from "./thumbnail-upload";
 import type { CourseDraft, DraftActions } from "./course-draft";
 
@@ -116,6 +117,21 @@ export function CourseBasicsCard({
               ))}
             </Select>
           </EditorField>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-foreground">Pricing</p>
+          <p className="mt-1 text-xs text-slate-500">
+            The first lesson is always free so learners can preview the course.
+          </p>
+          <div className="mt-2">
+            <PricingField
+              pricing={draft.pricing}
+              priceCents={draft.priceCents}
+              disabled={disabled}
+              onChange={actions.setMeta}
+            />
+          </div>
         </div>
 
         <div>

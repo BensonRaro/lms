@@ -4,7 +4,7 @@ import {
   HiOutlineTrash,
   HiOutlineUpload,
 } from "react-icons/hi";
-import { uploadMedia } from "@/lib/api/uploads";
+import { discardUploads, uploadMedia } from "@/lib/api/uploads";
 import { cn } from "@/lib/utils";
 import type { DraftThumbnail } from "./course-draft";
 
@@ -45,6 +45,7 @@ export function ThumbnailUpload({
 
     const controller = new AbortController();
     abortRef.current = controller;
+    const previousId = thumbnail?.publicId ?? null;
     setError(null);
     setProgress(0);
     onUploadingChange(true);
@@ -54,6 +55,9 @@ export function ThumbnailUpload({
         onProgress: setProgress,
         signal: controller.signal,
       });
+      if (previousId && previousId !== media.publicId) {
+        void discardUploads([previousId]);
+      }
       onUploaded({
         publicId: media.publicId,
         previewUrl: media.secureUrl,
@@ -94,7 +98,7 @@ export function ThumbnailUpload({
             className="aspect-[16/9] w-full bg-slate-100 object-cover"
           />
           <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-white px-3 py-2">
-            <p className="truncate text-xs text-slate-500">
+            <p className="min-w-0 flex-1 truncate text-xs text-slate-500">
               {uploading ? "Uploading a new cover…" : "Cover image"}
             </p>
             <div className="flex shrink-0 items-center gap-1">
@@ -109,7 +113,10 @@ export function ThumbnailUpload({
               </button>
               <button
                 type="button"
-                onClick={onRemoved}
+                onClick={() => {
+                  void discardUploads([thumbnail.publicId]);
+                  onRemoved();
+                }}
                 disabled={disabled || uploading}
                 aria-label="Remove course thumbnail"
                 className="grid size-8 place-items-center rounded-full text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"

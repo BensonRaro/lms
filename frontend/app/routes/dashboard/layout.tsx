@@ -1,15 +1,40 @@
-import { Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import {
   DashboardMobileBar,
   DashboardSidebar,
 } from "@/components/dashboard/dashboard-sidebar";
+import { PageLoader } from "@/components/globals/page-loader";
+import { canTeach, useSessionUser } from "@/lib/session";
 
 /**
  * Shell for signed-in dashboards: a floating sidebar card on the left from
  * `lg` upwards, and a slide-in drawer on smaller screens. The marketing header
  * is intentionally absent so dashboard space belongs to the product.
+ *
+ * The session is gated here, before any child page or query runs: anonymous
+ * visitors are sent to sign in and brought back to the page they asked for,
+ * and learners are sent to instructor onboarding. Every dashboard route is
+ * instructor-facing today, so the role check lives in this layout; split it
+ * into an instructor-only layout when learner dashboards land. The backend
+ * still authorizes every request, so this is a UX gate, not the boundary.
  */
 export default function DashboardLayout() {
+  const location = useLocation();
+  const { user, isPending, role } = useSessionUser();
+
+  if (isPending) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    const next = `${location.pathname}${location.search}`;
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+  }
+
+  if (!canTeach(role)) {
+    return <Navigate to="/become-instructor" replace />;
+  }
+
   return (
     <div className="relative min-h-screen bg-background">
       <div

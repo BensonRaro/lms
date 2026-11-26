@@ -87,6 +87,25 @@ async function requestTicket(purpose: UploadPurpose) {
 }
 
 /**
+ * Best-effort cleanup for uploads the editor removed or replaced. The server
+ * skips ids a course still points at, so calling this for a saved asset is
+ * safe — the save that detaches it owns the deletion.
+ */
+export async function discardUploads(publicIds: string[]) {
+  const ids = [...new Set(publicIds.filter(Boolean))];
+
+  if (ids.length === 0) {
+    return;
+  }
+
+  try {
+    await api.post("/api/uploads/discard", { publicIds: ids });
+  } catch {
+    // An orphaned asset is harmless; cleanup must never block the editor.
+  }
+}
+
+/**
  * Checks the pick before spending bandwidth. The signed ticket is the source
  * of truth for size and format, so this can never drift from the server.
  */

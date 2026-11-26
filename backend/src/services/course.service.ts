@@ -11,11 +11,11 @@ import { AppError } from "../middlewares/error.js";
 import { Course } from "../models/course.model.js";
 import type { CourseDraftInput } from "../validators/course.validator.js";
 import { isEditable, toCourseObjectId, toFields, EDITABLE } from "./course-fields.js";
+import { planMedia } from "./course-media.service.js";
 import {
   discardCourseMedia,
   discardPlannedMedia,
-  planMedia,
-} from "./course-media.service.js";
+} from "./media-cleanup.service.js";
 
 /** Newest-first list of the caller's courses (drafts and submissions). */
 export async function listMyCourses(
@@ -62,7 +62,7 @@ export async function saveDraft(params: {
     if (!doc) {
       throw new AppError(500, "COURSE_WRITE_FAILED", "Could not save your course.");
     }
-    discardPlannedMedia(media);
+    await discardPlannedMedia(media);
     return toCourseDTO(doc);
   }
 
@@ -96,7 +96,7 @@ export async function saveDraft(params: {
     );
   }
 
-  discardPlannedMedia(media);
+  await discardPlannedMedia(media);
   return toCourseDTO(updated);
 }
 
@@ -162,5 +162,5 @@ export async function deleteCourse(params: {
     await session.endSession();
   }
 
-  discardCourseMedia(existing);
+  await discardCourseMedia(existing);
 }

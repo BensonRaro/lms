@@ -8,8 +8,8 @@ import {
 import { InstructorProfileCard } from "@/components/instructor/profile-card";
 import { ApiError } from "@/lib/api/client";
 import { useMyCourses } from "@/lib/hooks/use-courses";
-import { useInstructorAccess } from "@/lib/hooks/use-instructor-access";
 import { useInstructorProfile } from "@/lib/hooks/use-instructor";
+import { useSessionUser } from "@/lib/session";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,19 +22,20 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function InstructorDashboardPage() {
-  const { user, isPending, allowed } = useInstructorAccess(
-    "/dashboard/instructor",
-  );
-
-  // `enabled` keeps the queries from firing before the session resolves (and
-  // during server rendering, where there is no cookie to send).
+  // The dashboard layout already gated the session; this guard keeps the page
+  // safe while the session refetches, and `enabled` stops queries from firing
+  // during server rendering, where there is no cookie to send.
+  const { user } = useSessionUser();
   const profileQuery = useInstructorProfile({
     userId: user?.id,
-    enabled: allowed,
+    enabled: Boolean(user?.id),
   });
-  const coursesQuery = useMyCourses({ userId: user?.id, enabled: allowed });
+  const coursesQuery = useMyCourses({
+    userId: user?.id,
+    enabled: Boolean(user?.id),
+  });
 
-  if (isPending || !allowed || profileQuery.isPending) {
+  if (!user || profileQuery.isPending) {
     return <DashboardSkeleton />;
   }
 

@@ -4,7 +4,7 @@ import {
   HiOutlineTrash,
   HiOutlineUpload,
 } from "react-icons/hi";
-import { uploadMedia } from "@/lib/api/uploads";
+import { discardUploads, uploadMedia } from "@/lib/api/uploads";
 
 type LessonVideoUploadProps = {
   videoPublicId: string | null;
@@ -44,6 +44,7 @@ export function LessonVideoUpload({
 
     const controller = new AbortController();
     abortRef.current = controller;
+    const previousId = videoPublicId;
     setError(null);
     setFileName(file.name);
     setProgress(0);
@@ -54,6 +55,9 @@ export function LessonVideoUpload({
         onProgress: setProgress,
         signal: controller.signal,
       });
+      if (previousId && previousId !== media.publicId) {
+        void discardUploads([previousId]);
+      }
       onUploaded(media.publicId);
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") {
@@ -89,7 +93,7 @@ export function LessonVideoUpload({
       {uploading ? (
         <div className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5">
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-xs font-medium text-slate-600">
+            <p className="min-w-0 flex-1 truncate text-xs font-medium text-slate-600">
               {progress !== null && progress >= 100
                 ? "Processing video…"
                 : `Uploading ${fileName ?? "video"}… ${progress ?? 0}%`}
@@ -138,7 +142,10 @@ export function LessonVideoUpload({
               </button>
               <button
                 type="button"
-                onClick={onRemoved}
+                onClick={() => {
+                  void discardUploads([videoPublicId]);
+                  onRemoved();
+                }}
                 aria-label="Remove lesson video"
                 className="grid size-8 shrink-0 place-items-center rounded-full text-emerald-600/70 transition-colors hover:bg-red-50 hover:text-red-500"
               >

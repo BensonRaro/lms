@@ -35,10 +35,10 @@ Let connect https://cloudinary.com/ - CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY
 
 Include course delete, Changed secret, now you can design the upload section for both thumbnail and video uploads.
 
-Fix design issue, the video upload progess bar is taking too much width during video upload.
+Fix design issue, the video upload progess bar is taking too much width during video upload. If not that, there is an issue with left side width find it and fix.
 
 Fix, on media delete or replace, the media should be deleted on cloudinary.
 
 instructor should always add first lesson as free - course preview, also the instructor should be able to choose if the course is free or a paid course.
 
-Dashboard should be guarded on the layout. If you are unauthenticated or role mismatch - student visiting instructor dashboard. 
+Dashboard should be guarded-protected on the layout. If you are unauthenticated or role mismatch - e.g student visiting instructor dashboard. 

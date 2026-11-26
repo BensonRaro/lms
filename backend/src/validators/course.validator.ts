@@ -16,6 +16,10 @@ const objectId = z
  */
 const mediaId = z.string().trim().min(1).max(255).nullable().default(null);
 
+/** Prices are USD cents; $1 minimum, $10,000 ceiling. */
+export const MIN_COURSE_PRICE_CENTS = 100;
+export const MAX_COURSE_PRICE_CENTS = 1_000_000;
+
 const lessonInput = z
   .object({
     id: objectId,
@@ -50,6 +54,15 @@ export const courseDraftSchema = z
     category: z.enum(EXPERTISE_TOPICS),
     level: z.enum(["beginner", "intermediate", "advanced"]),
     thumbnailPublicId: mediaId,
+    /** Free vs paid is a draft choice; a paid price is required to submit. */
+    pricing: z.enum(["free", "paid"]).default("free"),
+    priceCents: z
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_COURSE_PRICE_CENTS)
+      .nullable()
+      .default(null),
     sections: z.array(sectionInput).max(15).default([]),
   })
   .strict()

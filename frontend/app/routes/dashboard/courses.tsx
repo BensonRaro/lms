@@ -2,7 +2,7 @@ import type { Route } from "./+types/courses";
 import { CourseListPanel } from "@/components/instructor/course-list-panel";
 import { DashboardSkeleton } from "@/components/instructor/dashboard-states";
 import { useMyCourses } from "@/lib/hooks/use-courses";
-import { useInstructorAccess } from "@/lib/hooks/use-instructor-access";
+import { useSessionUser } from "@/lib/session";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,12 +15,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function InstructorCoursesPage() {
-  const { user, isPending, allowed } = useInstructorAccess(
-    "/dashboard/instructor/courses",
-  );
-  const coursesQuery = useMyCourses({ userId: user?.id, enabled: allowed });
+  // Access is enforced by the dashboard layout; the session only gates queries.
+  const { user } = useSessionUser();
+  const coursesQuery = useMyCourses({
+    userId: user?.id,
+    enabled: Boolean(user?.id),
+  });
 
-  if (isPending || !allowed) {
+  if (!user) {
     return <DashboardSkeleton />;
   }
 

@@ -7,6 +7,8 @@ import type { DraftLesson } from "./course-draft";
 type LessonCardProps = {
   lesson: DraftLesson;
   index: number;
+  /** True for the first lesson of the first section — always the free preview. */
+  isPreview: boolean;
   disabled: boolean;
   onChange: (patch: Partial<Omit<DraftLesson, "key" | "id">>) => void;
   onVideoUploaded: (publicId: string) => void;
@@ -22,6 +24,7 @@ type LessonCardProps = {
 export function LessonCard({
   lesson,
   index,
+  isPreview,
   disabled,
   onChange,
   onVideoUploaded,
@@ -34,9 +37,19 @@ export function LessonCard({
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Lesson {number}
-        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Lesson {number}
+          </p>
+          {isPreview ? (
+            <span
+              className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-600"
+              title="Learners can watch this lesson before enrolling."
+            >
+              Free preview
+            </span>
+          ) : null}
+        </div>
         {!disabled && (
           <button
             type="button"

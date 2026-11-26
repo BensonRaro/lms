@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import type { Course, CourseStatus } from "@/lib/api/courses";
 import { apiErrorMessage } from "@/lib/api/client";
+import { discardUploads } from "@/lib/api/uploads";
 import {
   useDeleteCourse,
   useSaveCourseDraft,
@@ -13,6 +14,7 @@ import { CourseCurriculum } from "./course-curriculum";
 import { DeleteCourseCard } from "./delete-course-card";
 import {
   draftFromCourse,
+  draftMediaIds,
   emptyDraft,
   missingForReview,
   toPayload,
@@ -112,8 +114,10 @@ export function CourseEditor({ course }: { course?: Course }) {
 
     setNotice(null);
     deleteMutation.mutate(courseId, {
-      onSuccess: () =>
-        navigate("/dashboard/instructor/courses", { replace: true }),
+      onSuccess: () => {
+        void discardUploads(draftMediaIds(draft));
+        navigate("/dashboard/instructor/courses", { replace: true });
+      },
       onError: (error) =>
         setNotice(apiErrorMessage(error, "Could not delete your course.")),
     });
@@ -150,7 +154,7 @@ export function CourseEditor({ course }: { course?: Course }) {
       ) : null}
 
       <div className="grid items-start gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <CourseBasicsCard
             draft={draft}
             actions={actions}
@@ -171,7 +175,7 @@ export function CourseEditor({ course }: { course?: Course }) {
           />
         </div>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
           <PublishingChecklist draft={draft} locked={locked} />
 
           <section className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">

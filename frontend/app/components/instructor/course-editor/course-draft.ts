@@ -2,7 +2,9 @@ import type {
   Course,
   CourseDraftPayload,
   CourseLevel,
+  CoursePricing,
 } from "@/lib/api/courses";
+import { MIN_COURSE_PRICE_CENTS } from "@/lib/api/courses";
 import { EXPERTISE_TOPICS, type ExpertiseTopic } from "@/lib/api/instructors";
 
 /** Saved thumbnail id plus the URL used only for the editor preview. */
@@ -34,11 +36,17 @@ export type CourseDraft = {
   description: string;
   category: ExpertiseTopic;
   level: CourseLevel;
+  pricing: CoursePricing;
+  /** USD cents; null when the course is free. */
+  priceCents: number | null;
   thumbnail: DraftThumbnail | null;
   sections: DraftSection[];
 };
 
-type DraftMeta = Pick<CourseDraft, "title" | "subtitle" | "description"> & {
+type DraftMeta = Pick<
+  CourseDraft,
+  "title" | "subtitle" | "description" | "pricing" | "priceCents"
+> & {
   category: ExpertiseTopic;
   level: CourseLevel;
 };
@@ -87,6 +95,8 @@ export function emptyDraft(): CourseDraft {
     description: "",
     category: EXPERTISE_TOPICS[0],
     level: "beginner",
+    pricing: "free",
+    priceCents: null,
     thumbnail: null,
     sections: [{ key: newKey(), title: "", lessons: [newLesson()] }],
   };
@@ -99,6 +109,8 @@ export function draftFromCourse(course: Course): CourseDraft {
     description: course.description,
     category: course.category,
     level: course.level,
+    pricing: course.pricing,
+    priceCents: course.priceCents,
     thumbnail:
       course.thumbnailPublicId && course.thumbnailUrl
         ? {
@@ -130,6 +142,8 @@ export function toPayload(draft: CourseDraft): CourseDraftPayload {
     description: draft.description.trim(),
     category: draft.category,
     level: draft.level,
+    pricing: draft.pricing,
+    priceCents: draft.pricing === "paid" ? draft.priceCents : null,
     thumbnailPublicId: draft.thumbnail?.publicId ?? null,
     sections: draft.sections.map((section) => ({
       ...(section.id ? { id: section.id } : {}),
@@ -143,6 +157,19 @@ export function toPayload(draft: CourseDraft): CourseDraftPayload {
       })),
     })),
   };
+}
+
+/** Every media id the draft points at, for cleanup after a destructive action. */
+export function draftMediaIds(draft: CourseDraft): string[] {
+  const videoIds = draft.sections.flatMap((section) =>
+    section.lessons.flatMap((lesson) =>
+      lesson.videoPublicId ? [lesson.videoPublicId] : [],
+    ),
+  );
+
+  return [draft.thumbnail?.publicId, ...videoIds].filter(
+    (id): id is string => Boolean(id),
+  );
 }
 
 export type ChecklistItem = { label: string; done: boolean };
@@ -161,6 +188,14 @@ export function reviewChecklist(draft: CourseDraft): ChecklistItem[] {
       done: draft.description.trim().length >= 40,
     },
     { label: "A course thumbnail", done: Boolean(draft.thumbnail) },
+    ...(draft.pricing === "paid"
+      ? [
+          {
+            label: `A price of at least $${MIN_COURSE_PRICE_CENTS / 100}`,
+            done: (draft.priceCents ?? 0) >= MIN_COURSE_PRICE_CENTS,
+          },
+        ]
+      : []),
     { label: "At least one section", done: draft.sections.length > 0 },
     { label: "At least one lesson", done: lessons.length > 0 },
     {

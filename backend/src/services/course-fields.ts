@@ -1,7 +1,10 @@
 import { Types } from "mongoose";
 import type { CourseStatus } from "../lib/course-dto.js";
 import { AppError } from "../middlewares/error.js";
-import type { CourseDraftInput } from "../validators/course.validator.js";
+import {
+  MIN_COURSE_PRICE_CENTS,
+  type CourseDraftInput,
+} from "../validators/course.validator.js";
 import type { MediaPlan } from "./course-media.service.js";
 
 export type EditableStatus = Extract<CourseStatus, "draft" | "rejected">;
@@ -31,6 +34,9 @@ export function toFields(input: CourseDraftInput, media: MediaPlan) {
     description: input.description,
     category: input.category,
     level: input.level,
+    pricing: input.pricing,
+    // Free courses never keep a leftover price from a previous paid draft.
+    priceCents: input.pricing === "paid" ? input.priceCents : null,
     thumbnail: media.thumbnail,
     sections: input.sections.map((section, sectionIndex) => ({
       ...(section.id ? { _id: new Types.ObjectId(section.id) } : {}),
@@ -41,6 +47,8 @@ export function toFields(input: CourseDraftInput, media: MediaPlan) {
         summary: lesson.summary,
         content: lesson.content,
         video: media.videos[sectionIndex]?.[lessonIndex] ?? null,
+        // Position decides the free preview, so it can never be spoofed.
+        isPreview: sectionIndex === 0 && lessonIndex === 0,
       })),
     })),
   };
@@ -59,6 +67,12 @@ export function assertReadyForReview(input: CourseDraftInput) {
   }
   if (!input.thumbnailPublicId) {
     missing.push("a course thumbnail");
+  }
+  if (
+    input.pricing === "paid" &&
+    (input.priceCents ?? 0) < MIN_COURSE_PRICE_CENTS
+  ) {
+    missing.push(`a price of at least $${MIN_COURSE_PRICE_CENTS / 100}`);
   }
   if (input.sections.length === 0) {
     missing.push("at least one section");

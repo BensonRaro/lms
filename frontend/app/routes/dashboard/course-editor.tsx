@@ -7,7 +7,7 @@ import {
 } from "@/components/instructor/dashboard-states";
 import { apiErrorMessage } from "@/lib/api/client";
 import { useCourse } from "@/lib/hooks/use-courses";
-import { useInstructorAccess } from "@/lib/hooks/use-instructor-access";
+import { useSessionUser } from "@/lib/session";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,16 +22,15 @@ export function meta({}: Route.MetaArgs) {
 export default function CourseEditorPage() {
   const { courseId } = useParams();
   const isNew = courseId === "new";
-  const { user, isPending, allowed } = useInstructorAccess(
-    `/dashboard/instructor/courses/${courseId ?? "new"}`,
-  );
+  // Access is enforced by the dashboard layout; the session only gates queries.
+  const { user } = useSessionUser();
   const courseQuery = useCourse({
     userId: user?.id,
     courseId: courseId ?? "",
-    enabled: allowed && !isNew,
+    enabled: Boolean(user?.id) && !isNew,
   });
 
-  if (isPending || !allowed) {
+  if (!user) {
     return <DashboardSkeleton />;
   }
 

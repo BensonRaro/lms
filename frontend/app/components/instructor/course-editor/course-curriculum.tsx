@@ -1,5 +1,6 @@
 import { HiOutlinePlus, HiOutlineTrash } from "react-icons/hi";
 import { Input } from "@/components/ui/input";
+import { discardUploads } from "@/lib/api/uploads";
 import { LessonCard } from "./lesson-card";
 import type { CourseDraft, DraftActions } from "./course-draft";
 
@@ -94,7 +95,14 @@ export function CourseCurriculum({
                   {!disabled && (
                     <button
                       type="button"
-                      onClick={() => actions.removeSection(sectionIndex)}
+                      onClick={() => {
+                        void discardUploads(
+                          section.lessons.flatMap((lesson) =>
+                            lesson.videoPublicId ? [lesson.videoPublicId] : [],
+                          ),
+                        );
+                        actions.removeSection(sectionIndex);
+                      }}
                       aria-label={`Remove section ${number}`}
                       className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500"
                     >
@@ -114,6 +122,7 @@ export function CourseCurriculum({
                         key={lesson.key}
                         lesson={lesson}
                         index={lessonIndex}
+                        isPreview={sectionIndex === 0 && lessonIndex === 0}
                         disabled={disabled}
                         onChange={(patch) =>
                           actions.updateLesson(
@@ -129,9 +138,12 @@ export function CourseCurriculum({
                           onVideoRemoved(sectionIndex, lessonIndex)
                         }
                         onUploadingChange={onUploadingChange}
-                        onRemove={() =>
-                          actions.removeLesson(sectionIndex, lessonIndex)
-                        }
+                        onRemove={() => {
+                          void discardUploads(
+                            lesson.videoPublicId ? [lesson.videoPublicId] : [],
+                          );
+                          actions.removeLesson(sectionIndex, lessonIndex);
+                        }}
                       />
                     ))
                   )}
